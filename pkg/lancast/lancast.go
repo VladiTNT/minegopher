@@ -12,6 +12,8 @@ const (
 	DefaultInterval = 1500 * time.Millisecond
 )
 
+// Starts a UDP multicast with the given address and interval, port should be the same as the one that
+// the minecraft server is listening on.
 func CustomBroadcastLAN(ctx context.Context, addr string, motd string, port int, interval time.Duration) error {
 	udpPacket := fmt.Appendf([]byte{}, "[MOTD]%s[/MOTD][AD]%d[/AD]", motd, port)
 
@@ -42,6 +44,8 @@ func CustomBroadcastLAN(ctx context.Context, addr string, motd string, port int,
 	}
 }
 
+// Start's a UDP multicast on minecraft's default address with the default interval, see CustomBroadcastLAN for
+// more details.
 func BroadcastLAN(ctx context.Context, motd string, port int) error {
 	return CustomBroadcastLAN(ctx, DefaultAddr, motd, port, DefaultInterval)
 }

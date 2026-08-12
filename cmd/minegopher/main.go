@@ -1,16 +1,44 @@
 package main
 
 import (
-	"context"
+	"bufio"
 	"fmt"
-	"os"
+	"net"
 
-	"github.com/VladiTNT/minegopher/pkg/lancast"
+	"github.com/VladiTNT/minegopher/pkg/mcproto"
 )
 
 func main() {
-	if err := lancast.BroadcastLAN(context.Background(), "nerd", 25565); err != nil {
-		fmt.Fprintf(os.Stderr, "Error with lan upd multicast: %v\n", err)
-		os.Exit(1)
+	ln, err := net.Listen("tcp", ":25565")
+	if err != nil {
+		panic(err)
 	}
+	defer ln.Close()
+
+	conn, err := ln.Accept()
+	if err != nil {
+		panic(err)
+	}
+	defer conn.Close()
+
+	rd := bufio.NewReader(conn)
+
+	_, handShakeData, err := mcproto.GetPacket(rd)
+	if err != nil {
+		panic(err)
+	}
+
+	var handShake mcproto.HandShake
+	if err := handShake.Get(handShakeData); err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%+v\n", handShake)
+
+	pid, pdata, err := mcproto.GetPacket(rd)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%d %q\n", pid, pdata)
 }
