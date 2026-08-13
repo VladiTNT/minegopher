@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 )
 
+// A HandShake is the first thing a Minecraft 1.7+ client sends to a server when reloading the server menu.
 type HandShake struct {
 	ProtocolVersion int32
 	ServerAddr      string
@@ -12,6 +13,7 @@ type HandShake struct {
 	NextState       int32
 }
 
+// Get parses the given packet payload into the handshake.
 func (h *HandShake) Get(data []byte) error {
 	var err error
 

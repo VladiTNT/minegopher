@@ -14,7 +14,7 @@ var (
 	ErrVarIntTooBig = errors.New("mcproto: varint too big")
 )
 
-// WriteVarInt writes the given value to w as a minecraft compatible VarInt.
+// WriteVarInt writes the given value to w as a Minecraft compatible VarInt.
 func WriteVarInt(w io.Writer, val int32) error {
 	uval := uint32(val)
 	buf := make([]byte, 0, 5)
@@ -35,7 +35,8 @@ func WriteVarInt(w io.Writer, val int32) error {
 	return err
 }
 
-// ReadVarInt reads byte by byte from br and returns the encoded varint and the amount of bytes consumed.
+// ReadVarInt parses the upcoming bytes and retruns a varint, it also returns the amount of bytes it consumed
+// because Minecraft's protocol for whatever reason starts each packet with the packet size not the packet id.
 func ReadVarInt(br io.ByteReader) (int32, int, error) {
 	var val int32
 	var pos int
@@ -60,6 +61,7 @@ func ReadVarInt(br io.ByteReader) (int32, int, error) {
 	return val, pos/7 + 1, nil
 }
 
+// WriteString writes a Minecraft compatible string to w.
 func WriteString(w io.Writer, s string) error {
 	data := []byte(s)
 
@@ -72,6 +74,8 @@ func WriteString(w io.Writer, s string) error {
 	return err
 }
 
+// ReadString reads a string encoded with Minecraft's protocol which uses a varint to encode the length and then
+// the string data.
 func ReadString(r ReaderByteReader) (string, error) {
 	strLen, _, err := ReadVarInt(r)
 	if err != nil {

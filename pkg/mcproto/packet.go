@@ -1,20 +1,17 @@
 package mcproto
 
 import (
+	"bytes"
 	"errors"
-)
-
-type PacketId int32
-
-const (
-	Status PacketId = iota
+	"io"
 )
 
 var (
 	ErrInvalidPacketLength = errors.New("mcproto: packet length and payload size are not the same")
 )
 
-func GetPacket(r ReaderByteReader) (PacketId, []byte, error) {
+// GetPacket parses one Minecraft protocol packet, returning the packet id, payload and any errors.
+func GetPacket(r ReaderByteReader) (int32, []byte, error) {
 	packetLength, _, err := ReadVarInt(r)
 	if err != nil {
 		return 0, nil, err
@@ -38,5 +35,24 @@ func GetPacket(r ReaderByteReader) (PacketId, []byte, error) {
 		return 0, nil, ErrInvalidPacketLength
 	}
 
-	return PacketId(packetId), data, nil
+	return packetId, data, nil
+}
+
+func WritePacket(w io.Writer, packetId int32, payload []byte) error {
+	var buf bytes.Buffer
+
+	if err := WriteVarInt(&buf, packetId); err != nil {
+		return err
+	}
+
+	if _, err := buf.Write(payload); err != nil {
+		return err
+	}
+
+	if err := WriteVarInt(w, int32(buf.Len())); err != nil {
+		return err
+	}
+
+	_, err := buf.WriteTo(w)
+	return err
 }
