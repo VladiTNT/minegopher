@@ -1,26 +1,45 @@
 package mctypes
 
-import "github.com/VladiTNT/minegopher/pkg/utils"
+import (
+	"errors"
+	"io"
+)
 
-// WriteString writes a Minecraft compatible string to w.
-func WriteString(w utils.DynamicWriter, data []byte) error {
-	if err := WriteVarInt(w, int32(len(data))); err != nil {
+// Wrties p to w as a Minecraft compatible string
+func WriteString(w io.Writer, p []byte) error {
+	if err := WriteVarInt(w, int32(len(p))); err != nil {
 		return err
 	}
 
-	_, err := w.Write(data)
-	return err
+	n, err := w.Write(p)
+	if err != nil {
+		return err
+	}
+
+	if n != len(p) {
+		return errors.New("mctypes: bytes written and string length don't match")
+	}
+
+	return nil
 }
 
-// ReadString reads from r and returns the string encoded within according to Minecraft's protocol.
-func ReadString(r utils.DynamicReader) ([]byte, error) {
-	n, err := ReadVarInt(r)
+// Reads from the stream and returns the string encoded within.
+func ReadString(r io.Reader) ([]byte, error) {
+	strLen, err := ReadVarInt(r)
 	if err != nil {
 		return nil, err
 	}
 
-	buf := make([]byte, n)
+	buf := make([]byte, strLen)
 
-	_, err = r.Read(buf)
-	return buf, err
+	n, err := r.Read(buf)
+	if err != nil {
+		return nil, err
+	}
+
+	if n != int(strLen) {
+		return nil, errors.New("mctypes: bytes read and string length don't match")
+	}
+
+	return buf, nil
 }
