@@ -2,7 +2,9 @@ package mcproto
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
+	"fmt"
 )
 
 const StatusPacketID int32 = 0
@@ -48,4 +50,15 @@ func PrepareStatusPacketPayload(ss *ServerStatus) ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+func FaviconString(pngData []byte) string {
+	var buf bytes.Buffer
+	enc := base64.NewEncoder(base64.RawStdEncoding, &buf)
+	defer enc.Close()
+	_, err := enc.Write(pngData)
+	if err != nil {
+		return ""
+	}
+	return fmt.Sprintf("data:image/png;base64,%s", buf.Bytes())
 }
