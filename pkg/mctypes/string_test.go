@@ -12,11 +12,11 @@ func TestVarString(t *testing.T) {
 	vals := []string{"", "vlad", "yhgjui985 yhugj5468uhgj 453yhguji54", "🤪🤪🤪🤪"}
 
 	for _, val := range vals {
-		if err := mctypes.WriteVarString(conn, []byte(val)); err != nil {
+		if err := mctypes.WriteString(conn, []byte(val)); err != nil {
 			t.Errorf("Error writting value to conn: %v\n", err)
 		}
 
-		s, err := mctypes.ReadVarString(conn)
+		s, err := mctypes.ReadString(conn)
 		if err != nil {
 			t.Errorf("Error reading value from conn: %v\n", err)
 		}

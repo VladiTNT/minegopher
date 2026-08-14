@@ -1,4 +1,4 @@
 /*
-Package mctypes contains utilities meant for encoding and parsing data types according to Minecraft's protocol.
+Package mctypes contains utilities meant for encoding and decoding data types used by Minecraft's protocol.
 */
 package mctypes
