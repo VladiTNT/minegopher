@@ -9,6 +9,9 @@ import (
 	"github.com/VladiTNT/minegopher/pkg/mctypes"
 )
 
+// Server status packets use a packet id of 0.
+const StatusID int32 = 0
+
 // This is the JSON structure that a Minecraft client expects from a server when making a status request.
 // Some fields are optional.
 type ServerStatus struct {
@@ -31,23 +34,21 @@ type ServerStatus struct {
 	EnforcesSecureChat bool   `json:"enforcesSecureChat"`
 }
 
-// Prepares a status request packet in buf, send to a minecraft server to get a server status info.
+// Prepares a status request packet in buf, send to a minecraft server to get server status info.
 func EncodeStatusRequest(buf *bytes.Buffer) error {
-	// Packet id of 0 for status request
-	return mctypes.WriteVarInt(buf, 0)
+	return mctypes.WriteVarInt(buf, StatusID)
 }
 
 // Prepares a status response packet in buf.
 func EncodeStatusResponse(buf *bytes.Buffer, ss *ServerStatus) error {
-	// Packet id of 0 for status response
-	if err := mctypes.WriteVarInt(buf, 0); err != nil {
+	if err := mctypes.WriteVarInt(buf, StatusID); err != nil {
 		return err
 	}
 
 	return json.NewEncoder(buf).Encode(ss)
 }
 
-// Encodes the given png into a base64 encoded string with the header that Minecraft clients expects, meant to
+// Encodes the given png into a base64 encoded string with the header that Minecraft clients expect, meant to
 // be used in the Favicon field of the ServerStatus struct.
 func EncodeFavicon(pngData []byte) string {
 	var buf bytes.Buffer
