@@ -1,5 +1,16 @@
 package mcproto
 
+import (
+	"bytes"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+
+	"github.com/VladiTNT/minegopher/pkg/mctypes"
+)
+
+// This is the JSON structure that a Minecraft client expects from a server when making a status request.
+// Some fields are optional.
 type ServerStatus struct {
 	Version struct {
 		Name     string `json:"name"`
@@ -18,4 +29,32 @@ type ServerStatus struct {
 	} `json:"description"`
 	Favicon            string `json:"favicon"`
 	EnforcesSecureChat bool   `json:"enforcesSecureChat"`
+}
+
+// Prepares a status request packet in buf, send to a minecraft server to get a server status info.
+func EncodeStatusRequest(buf *bytes.Buffer) error {
+	// Packet id of 0 for status request
+	return mctypes.WriteVarInt(buf, 0)
+}
+
+// Prepares a status response packet in buf.
+func EncodeStatusResponse(buf *bytes.Buffer, ss *ServerStatus) error {
+	// Packet id of 0 for status response
+	if err := mctypes.WriteVarInt(buf, 0); err != nil {
+		return err
+	}
+
+	return json.NewEncoder(buf).Encode(ss)
+}
+
+// Encodes the given png into a base64 encoded string with the header that Minecraft clients expects, meant to
+// be used in the Favicon field of the ServerStatus struct.
+func EncodeFavicon(pngData []byte) string {
+	var buf bytes.Buffer
+	enc := base64.NewEncoder(base64.RawStdEncoding, &buf)
+	defer enc.Close()
+	if _, err := enc.Write(pngData); err != nil {
+		return ""
+	}
+	return fmt.Sprintf("data:image/png;base64,%s", buf.Bytes())
 }
