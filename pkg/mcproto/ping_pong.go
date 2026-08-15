@@ -2,6 +2,7 @@ package mcproto
 
 import (
 	"bytes"
+	"encoding/binary"
 
 	"github.com/VladiTNT/minegopher/pkg/mctypes"
 )
@@ -16,10 +17,20 @@ func EncodePingPong(buf *bytes.Buffer, n int64) error {
 		return err
 	}
 
-	return mctypes.WriteVarLong(buf, n)
+	temp := make([]byte, 8)
+
+	_, err := binary.Encode(temp, binary.BigEndian, n)
+	if err != nil {
+		return err
+	}
+
+	_, err = buf.Write(temp)
+	return err
 }
 
 // Decodes a Ping-Pong packet payload into the varlong encoded within.
 func DecodePingPong(payload []byte) (int64, error) {
-	return mctypes.ReadVarLong(bytes.NewReader(payload))
+	var n int64
+	_, err := binary.Decode(payload, binary.BigEndian, &n)
+	return n, err
 }

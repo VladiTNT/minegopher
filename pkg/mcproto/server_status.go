@@ -45,7 +45,12 @@ func EncodeStatusResponse(buf *bytes.Buffer, ss *ServerStatus) error {
 		return err
 	}
 
-	return json.NewEncoder(buf).Encode(ss)
+	jsonData, err := json.Marshal(ss)
+	if err != nil {
+		return err
+	}
+
+	return mctypes.WriteString(buf, jsonData)
 }
 
 // Encodes the given png into a base64 encoded string with the header that Minecraft clients expect, meant to
