@@ -32,7 +32,7 @@ func main() {
 	}
 
 	if id == mcproto.StatusID {
-		h, err := mcproto.DecodeHandshakePacket(data)
+		h, err := mcproto.DecodeHandshake(data)
 		if err != nil {
 			panic(err)
 		}

@@ -19,7 +19,7 @@ func ReadPacket(r io.Reader) (int32, []byte, error) {
 	p := make([]byte, packetLen)
 
 	// Read the packet body
-	n, err := r.Read(p)
+	n, err := io.ReadFull(r, p)
 	if err != nil {
 		return 0, nil, err
 	}

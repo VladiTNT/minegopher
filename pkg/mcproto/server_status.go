@@ -53,6 +53,38 @@ func EncodeStatusResponse(buf *bytes.Buffer, ss *ServerStatus) error {
 	return mctypes.WriteString(buf, jsonData)
 }
 
+// Decodes the status response sent by a server into the server status struct and the favicon.
+func DecodeStatusResponse(payload []byte) (*ServerStatus, []byte, error) {
+	r := bytes.NewReader(payload)
+
+	jsonData, err := mctypes.ReadString(r)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var ss ServerStatus
+	if err := json.Unmarshal(jsonData, &ss); err != nil {
+		return nil, nil, err
+	}
+
+	var faviconBytes []byte
+
+	if ss.Favicon != "" {
+		const prefix = "data:image/png;base64,"
+
+		if len(ss.Favicon) > len(prefix) && ss.Favicon[:len(prefix)] == prefix {
+			base64string := ss.Favicon[len(prefix):]
+
+			faviconBytes, err = base64.StdEncoding.DecodeString(base64string)
+			if err != nil {
+				return nil, nil, err
+			}
+		}
+	}
+
+	return &ss, faviconBytes, nil
+}
+
 // Encodes the given png into a base64 encoded string with the header that Minecraft clients expect, meant to
 // be used in the Favicon field of the ServerStatus struct.
 func EncodeFavicon(pngData []byte) string {

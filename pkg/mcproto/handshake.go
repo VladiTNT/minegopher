@@ -16,7 +16,7 @@ type Handshake struct {
 }
 
 // Decodes a packet payload into the handshake data enccoded within.
-func DecodeHandshakePacket(packetPayload []byte) (*Handshake, error) {
+func DecodeHandshake(packetPayload []byte) (*Handshake, error) {
 	r := bytes.NewReader(packetPayload)
 	var err error
 	var h Handshake
@@ -47,4 +47,29 @@ func DecodeHandshakePacket(packetPayload []byte) (*Handshake, error) {
 	}
 
 	return &h, nil
+}
+
+// Encodes a Handshake packet into buf.
+func EncodeHandshake(buf *bytes.Buffer, protocol int32, address []byte, port uint16, next int32) error {
+	if err := mctypes.WriteVarInt(buf, StatusID); err != nil {
+		return err
+	}
+
+	if err := mctypes.WriteVarInt(buf, protocol); err != nil {
+		return err
+	}
+
+	if err := mctypes.WriteString(buf, address); err != nil {
+		return err
+	}
+
+	if err := binary.Write(buf, binary.BigEndian, port); err != nil {
+		return err
+	}
+
+	if err := mctypes.WriteVarInt(buf, next); err != nil {
+		return err
+	}
+
+	return nil
 }
